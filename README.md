@@ -18,7 +18,7 @@ Aplicativo web instalável para acompanhar água e suplementação. Não requer 
 5. Abra **Settings → Pages**.
 6. Em **Build and deployment**, escolha **Deploy from a branch**.
 7. Selecione a branch `main` e a pasta `/ (root)`; salve.
-8. Aguarde a publicação. O GitHub mostrará um endereço HTTPS semelhante a `https://SEU-USUARIO.github.io/meu-controle-diario/`.
+8. Aguarde a publicação. O GitHub mostrará um endereço HTTPS semelhante a `https://vitorfqueiroz.github.io/routine-control/`.
 
 ## Instalar no Android
 1. Abra o endereço HTTPS no Google Chrome do Android.
