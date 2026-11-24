@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123b35">
+  <meta name="description" content="Acompanhe sua hidratação e suplementação diariamente.">
+  <title>Meu Controle Diário</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">ROTINA DIÁRIA</p>
+      <h1>Meu Controle Diário</h1>
+      <p class="sub" id="todayLabel"></p>
+    </div>
+    <button id="installBtn" class="install-btn" hidden>Instalar</button>
+  </header>
+
+  <main>
+    <nav class="tabs" aria-label="Navegação principal">
+      <button class="tab active" data-tab="today">Hoje</button>
+      <button class="tab" data-tab="history">Histórico</button>
+      <button class="tab" data-tab="settings">Configurações</button>
+    </nav>
+
+    <section id="today" class="page active">
+      <article class="card water-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">HIDRATAÇÃO</p>
+            <h2>Água consumida</h2>
+          </div>
+          <span class="water-icon" aria-hidden="true">💧</span>
+        </div>
+        <div class="water-total"><span id="waterLiters">0,00</span><small> L</small></div>
+        <div class="progress-track"><div id="waterProgress" class="progress-fill"></div></div>
+        <div class="progress-meta">
+          <span id="waterPercent">0% da meta</span>
+          <span id="waterRemaining">Meta: 2.500 ml</span>
+        </div>
+        <div class="quick-add">
+          <button data-water="150">+150 ml</button>
+          <button data-water="250">+250 ml</button>
+          <button data-water="350">+350 ml</button>
+          <button data-water="500">+500 ml</button>
+        </div>
+        <div class="custom-water">
+          <label for="customWater">Outra quantidade (ml)</label>
+          <div class="inline-form">
+            <input id="customWater" type="number" min="1" max="5000" inputmode="numeric" placeholder="Ex.: 200">
+            <button id="addCustomWater" class="primary">Adicionar</button>
+          </div>
+        </div>
+        <button id="undoWater" class="text-btn">Desfazer último registro</button>
+      </article>
+
+      <article class="card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ROTINA</p>
+            <h2>Suplementação</h2>
+          </div>
+          <span id="supplementCount" class="count-pill">0/0</span>
+        </div>
+        <div id="supplementList" class="supplement-list"></div>
+        <button id="addSupplementOpen" class="outline-btn full">＋ Adicionar suplemento</button>
+      </article>
+      <p class="privacy-note">Seus registros ficam armazenados neste dispositivo. Faça uma exportação periódica em Configurações para manter uma cópia de segurança.</p>
+    </section>
+
+    <section id="history" class="page">
+      <article class="card">
+        <p class="eyebrow">ACOMPANHAMENTO</p>
+        <h2>Últimos 7 dias</h2>
+        <div id="weeklyStats" class="weekly-stats"></div>
+        <div id="historyList" class="history-list"></div>
+      </article>
+    </section>
+
+    <section id="settings" class="page">
+      <article class="card">
+        <p class="eyebrow">HIDRATAÇÃO</p>
+        <h2>Meta diária</h2>
+        <label for="goalInput">Meta de água (ml)</label>
+        <div class="inline-form">
+          <input id="goalInput" type="number" min="250" max="10000" step="50" inputmode="numeric">
+          <button id="saveGoal" class="primary">Salvar</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">NOTIFICAÇÕES</p>
+        <h2>Lembretes</h2>
+        <p class="muted">Permita notificações para receber avisos. Os lembretes locais funcionam enquanto o aplicativo estiver aberto; o Android pode suspender verificações em segundo plano.</p>
+        <button id="enableNotifications" class="primary full">Ativar notificações</button>
+        <div class="setting-row">
+          <div><strong>Lembrete de água</strong><small>Intervalo entre avisos</small></div>
+          <select id="waterReminderInterval">
+            <option value="60">A cada 1 hora</option>
+            <option value="90">A cada 1h30</option>
+            <option value="120">A cada 2 horas</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><strong>Janela dos lembretes</strong><small>Horário de início e fim</small></div>
+          <div class="time-range">
+            <input id="reminderStart" type="time">
+            <input id="reminderEnd" type="time">
+          </div>
+        </div>
+        <p id="notificationStatus" class="status-line"></p>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">DADOS</p>
+        <h2>Backup e restauração</h2>
+        <p class="muted">Exporte seus registros para um arquivo JSON. Guarde-o em local seguro para recuperar os dados em outro aparelho.</p>
+        <div class="stack">
+          <button id="exportData" class="outline-btn full">Exportar meus dados</button>
+          <label class="file-label">Importar backup JSON<input id="importData" type="file" accept="application/json,.json"></label>
+          <button id="clearData" class="danger-btn full">Apagar todos os dados</button>
+        </div>
+      </article>
+      <p class="privacy-note">Este aplicativo é um organizador de hábitos, não um sistema de orientação médica. Configure doses e horários conforme orientação profissional ou rótulo do produto.</p>
+    </section>
+  </main>
+
+  <dialog id="supplementDialog">
+    <form id="supplementForm" method="dialog">
+      <div class="dialog-head"><h2 id="dialogTitle">Adicionar suplemento</h2><button type="button" id="closeDialog" class="close-btn" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="supplementId">
+      <label for="supplementName">Nome</label>
+      <input id="supplementName" required maxlength="60" placeholder="Ex.: Vitamina B12">
+      <label for="supplementDose">Dose / observação (opcional)</label>
+      <input id="supplementDose" maxlength="80" placeholder="Ex.: conforme orientação">
+      <label for="supplementTime">Horário do lembrete</label>
+      <input id="supplementTime" type="time">
+      <div class="dialog-actions">
+        <button type="button" id="deleteSupplement" class="danger-btn" hidden>Excluir</button>
+        <button type="button" id="cancelDialog" class="outline-btn">Cancelar</button>
+        <button type="submit" class="primary">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
