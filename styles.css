@@ -60,3 +60,10 @@ dialog::backdrop{background:#10231e88}.dialog-head{display:flex;justify-content:
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,20px);background:#173c34;color:white;padding:12px 17px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;text-align:center;z-index:5}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(min-width:600px){main{padding-left:20px;padding-right:20px}.card{padding:22px}.topbar{padding-left:max(24px,calc((100vw - 680px)/2));padding-right:max(24px,calc((100vw - 680px)/2))}}
+
+.weekday-fieldset{border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin:15px 0 0;min-width:0}
+.weekday-fieldset legend{font-size:13px;font-weight:750;padding:0 5px}
+.weekday-fieldset .muted{margin:0 0 10px}
+.weekday-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.weekday-grid label{display:flex;align-items:center;gap:6px;margin:0;border:1px solid var(--line);border-radius:9px;padding:8px 6px;font-size:12px;font-weight:650}
+.weekday-grid input{width:16px;min-height:16px;height:16px;margin:0;accent-color:var(--green)}

@@ -1,11 +1,16 @@
 const STORAGE_KEY = "meuControleDiario.v1";
+const ALL_DAYS = [0,1,2,3,4,5,6]; // 0 = domingo; 6 = sábado
+const WEEK_DAYS = [
+  {value:1,label:"Seg"},{value:2,label:"Ter"},{value:3,label:"Qua"},
+  {value:4,label:"Qui"},{value:5,label:"Sex"},{value:6,label:"Sáb"},{value:0,label:"Dom"}
+];
 const defaultSupplements = [
-  {id: crypto.randomUUID(), name:"Vitamina B12", dose:"", time:"08:00", taken:false},
-  {id: crypto.randomUUID(), name:"Vitamina D3", dose:"", time:"08:00", taken:false},
-  {id: crypto.randomUUID(), name:"Zinco", dose:"", time:"", taken:false},
-  {id: crypto.randomUUID(), name:"Magnésio", dose:"", time:"20:00", taken:false},
-  {id: crypto.randomUUID(), name:"Ômega-3", dose:"", time:"08:00", taken:false},
-  {id: crypto.randomUUID(), name:"Creatina", dose:"", time:"", taken:false}
+  {id: crypto.randomUUID(), name:"Vitamina B12", dose:"", time:"08:00", taken:false, days:[...ALL_DAYS]},
+  {id: crypto.randomUUID(), name:"Vitamina D3", dose:"", time:"08:00", taken:false, days:[...ALL_DAYS]},
+  {id: crypto.randomUUID(), name:"Zinco", dose:"", time:"", taken:false, days:[...ALL_DAYS]},
+  {id: crypto.randomUUID(), name:"Magnésio", dose:"", time:"20:00", taken:false, days:[...ALL_DAYS]},
+  {id: crypto.randomUUID(), name:"Ômega-3", dose:"", time:"08:00", taken:false, days:[...ALL_DAYS]},
+  {id: crypto.randomUUID(), name:"Creatina", dose:"", time:"", taken:false, days:[...ALL_DAYS]}
 ];
 const dateKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const todayKey = () => dateKey();
@@ -21,9 +26,14 @@ function loadState(){
   try{
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if(!parsed) return freshState();
-    return {...freshState(),...parsed, reminders:{...freshState().reminders,...parsed.reminders}, lastSupplementNotice:parsed.lastSupplementNotice||{}};
+    return {...freshState(),...parsed, supplements:normalizeSupplements(parsed.supplements||freshState().supplements), reminders:{...freshState().reminders,...parsed.reminders}, lastSupplementNotice:parsed.lastSupplementNotice||{}};
   }catch{return freshState();}
 }
+function normalizeSupplements(items){
+  return (Array.isArray(items)?items:[]).map(s=>({...s,days:Array.isArray(s.days)&&s.days.length?s.days.filter(d=>ALL_DAYS.includes(d)):[...ALL_DAYS]}));
+}
+function isScheduledToday(s){return normalizeDays(s.days).includes(new Date().getDay());}
+function normalizeDays(days){return Array.isArray(days)?days.filter(d=>ALL_DAYS.includes(d)):[...ALL_DAYS];}
 function saveState(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
 function ensureToday(){
   const key=todayKey();
@@ -48,9 +58,10 @@ function render(){
   document.getElementById("waterProgress").style.width=pct+"%";
   document.getElementById("waterPercent").textContent=pct+"% da meta";
   document.getElementById("waterRemaining").textContent=state.water>=state.goal?"Meta atingida":`Faltam ${(state.goal-state.water).toLocaleString("pt-BR")} ml`;
-  document.getElementById("supplementCount").textContent=`${state.supplements.filter(s=>s.taken).length}/${state.supplements.length}`;
+  const scheduledSupplements=state.supplements.filter(isScheduledToday);
+  document.getElementById("supplementCount").textContent=`${scheduledSupplements.filter(s=>s.taken).length}/${scheduledSupplements.length}`;
   const list=document.getElementById("supplementList");
-  list.innerHTML=state.supplements.length?state.supplements.map(s=>`
+  list.innerHTML=scheduledSupplements.length?scheduledSupplements.map(s=>`
     <div class="supplement-item">
       <input class="check" type="checkbox" data-check="${s.id}" ${s.taken?"checked":""} aria-label="Marcar ${escapeHTML(s.name)} como tomado">
       <div class="supplement-info">
@@ -59,7 +70,7 @@ function render(){
       </div>
       <span class="supplement-state">${s.taken?"Tomado":"Pendente"}</span>
       <button class="edit-item" data-edit="${s.id}" aria-label="Editar ${escapeHTML(s.name)}">⋯</button>
-    </div>`).join(""):`<p class="muted">Nenhum suplemento cadastrado. Adicione o primeiro acima.</p>`;
+    </div>`).join(""):`<p class="muted">${state.supplements.length?"Nenhum suplemento programado para hoje.":"Nenhum suplemento cadastrado. Adicione o primeiro acima."}</p>`;
   document.getElementById("goalInput").value=state.goal;
   document.getElementById("waterReminderInterval").value=state.reminders.waterInterval;
   document.getElementById("reminderStart").value=state.reminders.start;
@@ -88,8 +99,10 @@ function renderHistory(){
     <div class="stat-box"><strong>${waterDays}/${saved.length}</strong><span>Dias que atingiram a meta</span></div>`;
   document.getElementById("historyList").innerHTML=records.reverse().map(r=>{
     if(!r.data)return `<div class="history-row"><strong>${r.label}</strong><span>Sem registro salvo</span></div>`;
-    const taken=r.data.supplements?.filter(s=>s.taken).length||0;
-    const total=r.data.supplements?.length||0;
+    const dayOfWeek=new Date(r.key+"T12:00:00").getDay();
+    const scheduled=(r.data.supplements||[]).filter(s=>normalizeDays(s.days).includes(dayOfWeek));
+    const taken=scheduled.filter(s=>s.taken).length;
+    const total=scheduled.length;
     return `<div class="history-row"><strong>${r.label}</strong><span>${(r.data.water/1000).toFixed(2).replace(".",",")} L · ${taken}/${total} suplementos</span></div>`;
   }).join("");
 }
@@ -104,6 +117,8 @@ function openSupplement(id=null){
   document.getElementById("supplementName").value=item?.name||"";
   document.getElementById("supplementDose").value=item?.dose||"";
   document.getElementById("supplementTime").value=item?.time||"";
+  const selectedDays=normalizeDays(item?.days);
+  document.querySelectorAll("[data-weekday]").forEach(input=>{input.checked=selectedDays.includes(Number(input.value));});
   document.getElementById("deleteSupplement").hidden=!item;
   document.getElementById("supplementDialog").showModal();
 }
@@ -111,7 +126,10 @@ function closeDialog(){document.getElementById("supplementDialog").close();}
 function saveSupplement(event){
   event.preventDefault();
   const id=document.getElementById("supplementId").value;
-  const item={id:id||crypto.randomUUID(),name:document.getElementById("supplementName").value.trim(),dose:document.getElementById("supplementDose").value.trim(),time:document.getElementById("supplementTime").value,taken:state.supplements.find(s=>s.id===id)?.taken||false};
+  const selectedDays=[...document.querySelectorAll("[data-weekday]:checked")].map(input=>Number(input.value));
+  if(!selectedDays.length){toast("Selecione pelo menos um dia da semana.");return;}
+  const previous=state.supplements.find(s=>s.id===id);
+  const item={id:id||crypto.randomUUID(),name:document.getElementById("supplementName").value.trim(),dose:document.getElementById("supplementDose").value.trim(),time:document.getElementById("supplementTime").value,taken:previous?.taken||false,days:selectedDays};
   if(!item.name)return;
   if(id)state.supplements=state.supplements.map(s=>s.id===id?item:s);
   else state.supplements.push(item);
@@ -153,7 +171,7 @@ function reminderCheck(){
     state.reminders.lastWaterNotice=now;saveState();
   }
   const hm=new Date().toTimeString().slice(0,5);
-  state.supplements.filter(s=>s.time===hm&&!s.taken).forEach(s=>{
+  state.supplements.filter(s=>isScheduledToday(s)&&s.time===hm&&!s.taken).forEach(s=>{
     const noticeKey=s.id+"-"+todayKey();
     if(state.lastSupplementNotice?.[noticeKey]!==hm){
       notify("Lembrete de suplementação",`Está no horário registrado: ${s.name}.`,"supplement-"+noticeKey);
@@ -174,7 +192,7 @@ function importData(file){
       const parsed=JSON.parse(reader.result),incoming=parsed.state||parsed;
       if(!incoming||!Array.isArray(incoming.supplements)||typeof incoming.goal!=="number")throw new Error();
       if(!confirm("A importação substituirá os dados atuais. Continuar?"))return;
-      state={...freshState(),...incoming,reminders:{...freshState().reminders,...incoming.reminders},lastSupplementNotice:incoming.lastSupplementNotice||{}};
+      state={...freshState(),...incoming,supplements:normalizeSupplements(incoming.supplements),reminders:{...freshState().reminders,...incoming.reminders},lastSupplementNotice:incoming.lastSupplementNotice||{}};
       saveState();render();toast("Backup importado.");
     }catch{toast("Arquivo inválido ou incompatível.");}
   };

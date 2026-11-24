@@ -140,6 +140,19 @@
       <input id="supplementDose" maxlength="80" placeholder="Ex.: conforme orientação">
       <label for="supplementTime">Horário do lembrete</label>
       <input id="supplementTime" type="time">
+      <fieldset class="weekday-fieldset">
+        <legend>Dias de uso</legend>
+        <p class="muted">O suplemento só aparecerá na lista e nos lembretes nos dias selecionados.</p>
+        <div class="weekday-grid">
+          <label><input type="checkbox" data-weekday value="1"> Seg</label>
+          <label><input type="checkbox" data-weekday value="2"> Ter</label>
+          <label><input type="checkbox" data-weekday value="3"> Qua</label>
+          <label><input type="checkbox" data-weekday value="4"> Qui</label>
+          <label><input type="checkbox" data-weekday value="5"> Sex</label>
+          <label><input type="checkbox" data-weekday value="6"> Sáb</label>
+          <label><input type="checkbox" data-weekday value="0"> Dom</label>
+        </div>
+      </fieldset>
       <div class="dialog-actions">
         <button type="button" id="deleteSupplement" class="danger-btn" hidden>Excluir</button>
         <button type="button" id="cancelDialog" class="outline-btn">Cancelar</button>

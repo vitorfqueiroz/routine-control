@@ -4,7 +4,9 @@ Aplicativo web instalável para acompanhar água e suplementação. Não requer 
 
 ## Recursos
 - Meta diária de água e registro em ml.
-- Checklist de suplementos, horários e observações editáveis.
+- Checklist de suplementos, horários, observações e dias da semana editáveis.
+- Agendamento semanal individual: suplementos só aparecem no checklist e nos lembretes nos dias selecionados.
+- Suplementos de versões anteriores recebem automaticamente os sete dias da semana, preservando os lembretes existentes.
 - Histórico dos últimos sete dias e resumo de dias registrados.
 - Lembretes locais enquanto o aplicativo está aberto.
 - Exportação e importação de backup JSON.
